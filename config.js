@@ -1,6 +1,6 @@
 export const CHAIN_ID = 5;
-export const StakingContract_Address = '0x4d5f711df82E72052725bf99A5E4Fd2Ba5063902';
-export const StakingContract_Address_NFT = '0x54387160023358bdABbb3992E39d0Df27c524bE9';
+export const StakingContract_Address = '0x7590Af1A92C04D5d96aB7373763E0019Da1221C4';
+export const StakingContract_Address_NFT = '0x7e9Ea500dfBf30e514ADbaaC529954133B77A95b';
 export const SMARTCONTRACT_ADDRESS_ERC20 = '0x1664e2Dd23571DD0224E3a71161850a301F43a80';
 export const NETWORK = "Testnet";
 export const BACKEND_URL = 'http://localhost:3001/withdraw'

@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-    BACKEND_URL,
-  StakingContract_Address,
-  StakingContract_Address_NFT,
-} from "../../config";
 import { ScaleLoader } from "react-spinners";
 import { successAlert } from "./toastGroup";
 import { PageLoading } from "./Loading";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import axios from "axios";
+import { useApp } from "../contexts/AppContext";
 
 const style = {
   position: "absolute",
@@ -35,39 +26,21 @@ export default function UnNFTCard({
   contract_nft,
   setResponse
 }) {
+  const {setGameModalOpen, setSigner, setRelease, setTokens} = useApp()
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState("");
   const [reward, setReward] = useState(0);
-  const [release, setRelease] = useState(0);
-  const [rand, setRand] = useState(0);
 
-  const [open, setOpen] = useState(false);
-  const handleOpen = (value) => {
-    setOpen(true);
-    setRelease(value);
-    const rand = Math.floor(Math.random() * 100) % 2;
-    setRand(rand);
+
+  const handleOpen = (release, tokenId) => {
+    let tokenIds = [];
+    tokenIds.push(tokenId);
+
+    setSigner(signerAddress);
+    setRelease(release);
+    setTokens(tokenIds);
+    setGameModalOpen(true);
   };
-  const handleClose = () => setOpen(false);
-  const handleSend = (tokenId) => {
-    const url = BACKEND_URL;
-    const requestBody = {
-        address: signerAddress,
-        release: release.toString(),
-        tokenIds: JSON.stringify({"ids": [tokenId]})
-    }
-
-    axios.post(url, requestBody)
-    .then(response => {
-        console.log('Response: ', response.data)
-        setResponse(response.data)
-    })
-    .catch(error => {
-        console.error('Error: ', error)
-    });
-
-    setOpen(false)
-  }
 
   const getNftDetail = async () => {
     const uri = await contract_nft?.tokenURI(tokenId);
@@ -83,7 +56,7 @@ export default function UnNFTCard({
 
   const getReward = async () => {
     const reward =
-      parseFloat(await contract.rewardAmount(id)) / Math.pow(10, 18);
+      parseFloat(await contract.rewardAmount(tokenId)) / Math.pow(10, 18);
     setReward(reward);
   };
 
@@ -119,35 +92,11 @@ export default function UnNFTCard({
         )}
       </div>
       <div className={loading ? "card-action is-loading" : "card-action"}>
-        <button className="btn-primary" onClick={() => handleOpen(1)}>
+        <button className="btn-primary" onClick={()=>handleOpen(1, tokenId)}>
           UNSTAKE
         </button>
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              Tic Tac Toe Game
-            </Typography>
-            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            {
-                rand ? 
-                <>
-                    You Win. You can claim reward
-                    <button onClick={() => handleSend(tokenId)}> Claim Reward</button>
-                </>  
-                    :
-                <>
-                    You Lose. You can't claim anymore at this time
-                </>
-            }
-            </Typography>
-          </Box>
-        </Modal>
-        <button className="btn-primary" onClick={() => handleOpen(0)}>
+       
+        <button className="btn-primary" onClick={()=>handleOpen(0, tokenId)}>
           CLAIM
         </button>
       </div>

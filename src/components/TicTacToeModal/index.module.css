@@ -1,0 +1,65 @@
+/* TicTacToe.css */
+.tictactoe {
+  text-align: center;
+  margin: 50px auto;
+  max-width: 300px;
+}
+
+.status {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  max-width: 300px;
+}
+
+.intern{
+  display: block;
+}
+.square {
+  width: 100%;
+  height: 100px;
+  font-size: 24px;
+  font-weight: bold;
+  border: 2px solid #000;
+  cursor: pointer;
+}
+
+.boardrow {
+  display: flex;
+  justify-content: center;
+}
+
+.closeButton {
+  float: right;
+  display: block;
+}
+
+.game{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #00000072;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+.gameModal {
+  width: 50%;
+  height: 460px;
+  background-color: #0070f3;
+  cursor: pointer;
+  text-align: center;
+  margin: 50px auto;
+  max-width: 300px;
+  z-index: 3;
+}

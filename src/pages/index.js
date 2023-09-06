@@ -12,8 +12,6 @@ import {
   NETWORK,
   SITE_ERROR,
   SMARCONTRACT_INI_ABI,
-  SMARTCONTRACT_ABI_ERC20,
-  SMARTCONTRACT_ADDRESS_ERC20,
   StakingContract_ABI,
   StakingContract_Address,
   StakingContract_Address_NFT,
@@ -23,29 +21,13 @@ import { errorAlertCenter, successAlert } from "../components/toastGroup";
 import { Container, Grid, Button } from "@mui/material";
 import UnNFTCard from "../components/UnNFTCard";
 import { PageLoading } from "../components/Loading";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import axios from "axios";
 
+import TicTacToeModal from "../components/TicTacToeModal";
+import { useApp } from "../contexts/AppContext";
 
 let web3Modal = undefined;
 let contract = undefined;
-let contract_20 = undefined;
 let contract_nft = undefined;
-
-const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-  };
-  
 
 export default function Home() {
   const [connected, setConnected] = useState(false);
@@ -59,7 +41,8 @@ export default function Home() {
   const [rand, setRand] = useState(0);
   const [response, setResponse] = useState();
   const [open, setOpen] = useState(false);
-  const [release, setRelease] = useState(0);
+
+  const {setGameModalOpen, gameModalOpen, setSigner, setTokens, setRelease} = useApp()
 
   const connectWallet = async () => {
     if (await checkNetwork()) {
@@ -77,6 +60,7 @@ export default function Home() {
 
         setConnected(true);
         setSignerAddress(address);
+        setSigner(address);
 
         contract = new ethers.Contract(
           StakingContract_Address,
@@ -87,12 +71,6 @@ export default function Home() {
         contract_nft = new ethers.Contract(
           StakingContract_Address_NFT,
           SMARCONTRACT_INI_ABI,
-          signer
-        );
-
-        contract_20 = new ethers.Contract(
-          SMARTCONTRACT_ADDRESS_ERC20,
-          SMARTCONTRACT_ABI_ERC20,
           signer
         );
 
@@ -118,6 +96,7 @@ export default function Home() {
       const balance = await contract_nft.balanceOf(address);
       const stakedAmount = await contract.stakedAmount(address);
       console.log(stakedAmount);
+      setSigner(address);
       let total = 0;
       try {
         let promise_index = [];
@@ -167,39 +146,17 @@ export default function Home() {
     }
   };
 
-  const handleOpen = (value) => {
-    setOpen(true);
-    setRelease(value);
-    const rand = Math.floor(Math.random() * 100) % 2;
-    setRand(rand);
-  };
-  const handleClose = () => setOpen(false);
-  const handleSend = (stakedNFTs) => {
+  const handleOpen = (release, stakedNFTs) => {
     let tokenIds = [];
     for (let item of stakedNFTs) {
         tokenIds.push(item.tokenId);
     }
     
-    console.log(tokenIds)
-    const url = BACKEND_URL;
-
-    const requestBody = {
-        address: signerAddress,
-        release: release.toString(),
-        tokenIds: JSON.stringify({"ids": tokenIds})
-    }
-
-    axios.post(url, requestBody)
-    .then(response => {
-        console.log('Response: ', response.data)
-        setResponse(response.data)
-    })
-    .catch(error => {
-        console.error('Error: ', error)
-    });
-
-    setOpen(false)
-  }
+    setSigner()
+    setRelease(release);
+    setTokens(tokenIds);
+    setGameModalOpen(true);
+  };
 
   const onStakeAll = async () => {
     let unstaked = [];
@@ -230,41 +187,6 @@ export default function Home() {
     setStakeAllLoading(false);
   };
 
-  const onUnstakeAll = async () => {
-    setUnstakeAllLoading(true);
-    let staked = [];
-    for (let item of stakedNFTs) {
-      staked.push(item.id);
-    }
-    try {
-      const unstake = await contract.withdrawReward(address, staked, true);
-      await unstake.wait();
-      successAlert("Unstaking is successful.");
-      updatePage(signerAddress);
-    } catch (error) {
-      setUnstakeAllLoading(false);
-      console.log(error);
-    }
-    setUnstakeAllLoading(false);
-  };
-
-  const onClaimAll = async () => {
-    setClaimAllLoading(true);
-    let staked = [];
-    for (let item of stakedNFTs) {
-      staked.push(item.id);
-    }
-    try {
-      const unstake = await contract.withdrawReward(address, staked, false);
-      await unstake.wait();
-      successAlert("Claiming is successful.");
-      updatePage(signerAddress);
-    } catch (error) {
-      setClaimAllLoading(false);
-      console.log(error);
-    }
-    setClaimAllLoading(false);
-  };
 
   useEffect(() => {
     async function fetchData() {
@@ -368,7 +290,7 @@ export default function Home() {
                       <div className="box-control">
                         <button
                           className="btn-second"
-                          onClick={handleOpen}
+                          onClick={() => handleOpen(1, stakedNFTs)}
                           disabled={unstakeAllLoading}
                         >
                           {unstakeAllLoading ? (
@@ -379,42 +301,10 @@ export default function Home() {
                             <>UNSTAKE ALL</>
                           )}
                         </button>
-                        <Modal
-                          open={open}
-                          onClose={handleClose}
-                          aria-labelledby="modal-modal-title"
-                          aria-describedby="modal-modal-description"
-                        >
-                          <Box sx={style}>
-                            <Typography
-                              id="modal-modal-title"
-                              variant="h6"
-                              component="h2"
-                            >
-                              Tic Tac Toe Game
-                            </Typography>
-                            <Typography
-                              id="modal-modal-description"
-                              sx={{ mt: 2 }}
-                            >
-                              {rand ? (
-                                <>
-                                  You Win. You can claim reward
-                                  <button onClick={() => handleSend(stakedNFTs)}>
-                                    Claim Reward
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  You Lose. You can't claim anymore at this time
-                                </>
-                              )}
-                            </Typography>
-                          </Box>
-                        </Modal>
+
                         <button
                           className="btn-second"
-                          onClick={handleOpen}
+                          onClick={() => handleOpen(0, stakedNFTs)}
                           disabled={claimAllLoading}
                         >
                           {claimAllLoading ? (
@@ -455,6 +345,7 @@ export default function Home() {
             </div>
           </Container>
         )}
+        {gameModalOpen && <TicTacToeModal />}
       </main>
       {/* eslint-disable-next-line */}
       <img src="/kongbackground.gif" className="background" alt="" />
