@@ -3,7 +3,7 @@ export const StakingContract_Address = '0x7590Af1A92C04D5d96aB7373763E0019Da1221
 export const StakingContract_Address_NFT = '0x7e9Ea500dfBf30e514ADbaaC529954133B77A95b';
 export const SMARTCONTRACT_ADDRESS_ERC20 = '0x1664e2Dd23571DD0224E3a71161850a301F43a80';
 export const NETWORK = "Testnet";
-export const BACKEND_URL = 'http://localhost:3001/withdraw'
+export const BACKEND_URL = 'https://staking-backend.vercel.app/withdraw'
 
 export const SITE_ERROR = [
 	"The wrong network, please switch to the Ethereum Goerli network.",
