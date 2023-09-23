@@ -157,7 +157,7 @@ export default function TicTacToeModal() {
             </div> 
             : 
             <>
-              You Lose. You can't Claim now.
+              You Lose. You can&apos;t Claim now.
             </>
             }
         </div>
